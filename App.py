@@ -1,20 +1,17 @@
 import streamlit as st
 import pdfplumber
-import os
+import requests
 
-from dotenv import load_dotenv
-from openai import OpenAI
+# HuggingFace API Key
+API_KEY = st.secrets["HF_API_KEY"]
 
-# Load environment variables
-load_dotenv()
+API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
 
-# OpenRouter Client
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY")
-)
+headers = {
+    "Authorization": f"Bearer {API_KEY}"
+}
 
-# App title
+# App Title
 st.title("AI Fact Check Agent")
 
 st.write("Upload any PDF and detect false or outdated claims.")
@@ -46,45 +43,28 @@ if uploaded_file:
 
     st.write(full_text[:3000])
 
-    # AI Fact Check Button
+    # Fact Check Button
     if st.button("Run AI Fact Check"):
 
-        with st.spinner("AI is checking facts..."):
+        with st.spinner("Checking facts..."):
 
             prompt = f"""
-            You are a professional AI fact checker.
+            Fact check this text and identify false or outdated claims:
 
-            Analyze the following PDF text.
-
-            Identify:
-            - false claims
-            - outdated statistics
-            - incorrect dates
-            - fake technical facts
-
-            For every incorrect claim return:
-
-            Claim:
-            Status:
-            Correct Fact:
-
-            TEXT:
-            {full_text[:4000]}
+            {full_text[:3000]}
             """
 
-            response = client.chat.completions.create(
+            payload = {
+                "inputs": prompt
+            }
 
-                model="meta-llama/llama-3.3-8b-instruct:free",
-
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
+            response = requests.post(
+                API_URL,
+                headers=headers,
+                json=payload
             )
 
-            result = response.choices[0].message.content
+            result = response.json()
 
             st.subheader("Fact Check Results")
 
