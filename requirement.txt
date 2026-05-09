@@ -1,0 +1,6 @@
+streamlit
+openai
+pdfplumber
+python-dotenv
+requests
+google-generativeai
