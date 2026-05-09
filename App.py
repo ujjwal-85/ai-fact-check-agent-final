@@ -6,7 +6,7 @@ import requests
 API_TOKEN = st.secrets["HF_API_KEY"]
 
 # Correct API URL
-API_URL = "https://router.huggingface.co/hf-inference/models/google/flan-t5-base"
+API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn"
 
 headers = {
     "Authorization": f"Bearer {API_TOKEN}"
