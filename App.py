@@ -74,7 +74,7 @@ if uploaded_file:
 
             response = client.chat.completions.create(
 
-                model="google/gemma-2-9b-it:free",
+                model="meta-llama/llama-3.3-8b-instruct:free",
 
                 messages=[
                     {
