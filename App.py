@@ -2,20 +2,20 @@ import streamlit as st
 import pdfplumber
 import requests
 
-# Hugging Face API Token from Streamlit Secrets
+# Hugging Face API Token
 API_TOKEN = st.secrets["HF_API_KEY"]
 
-# Working Hugging Face model endpoint
-API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
+# Correct API URL
+API_URL = "https://router.huggingface.co/hf-inference/models/google/flan-t5-base"
 
 headers = {
     "Authorization": f"Bearer {API_TOKEN}"
 }
 
-# App Title
+# App UI
 st.title("AI Fact Check Agent")
 
-st.write("Upload any PDF and analyze claims using AI.")
+st.write("Upload a PDF and analyze claims using AI.")
 
 # Upload PDF
 uploaded_file = st.file_uploader(
@@ -29,7 +29,7 @@ if uploaded_file:
 
     full_text = ""
 
-    # Extract text from PDF
+    # Extract text
     with pdfplumber.open(uploaded_file) as pdf:
 
         for page in pdf.pages:
@@ -39,23 +39,20 @@ if uploaded_file:
             if text:
                 full_text += text
 
-    # Show extracted text
     st.subheader("Extracted Text")
 
     st.write(full_text[:3000])
 
-    # Run AI Fact Check
+    # AI Fact Check
     if st.button("Run AI Fact Check"):
 
-        with st.spinner("Analyzing PDF with AI..."):
+        with st.spinner("Analyzing with AI..."):
 
             prompt = f"""
-            Fact check the following text.
-
-            Identify:
+            Fact check the following text and identify:
             - false claims
             - outdated facts
-            - misleading statistics
+            - misleading statements
 
             TEXT:
             {full_text[:2000]}
@@ -76,11 +73,10 @@ if uploaded_file:
 
                 st.subheader("Fact Check Results")
 
-                # Show raw API response
-                st.code(response.text)
+                st.write(response.json())
 
             except Exception as e:
 
-                st.error("API Request Failed")
+                st.error("Request Failed")
 
-                st.code(str(e))
+                st.write(str(e))
