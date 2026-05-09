@@ -5,6 +5,7 @@ import requests
 # HuggingFace API Key
 API_KEY = st.secrets["HF_API_KEY"]
 
+# HuggingFace Model URL
 API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
 
 headers = {
@@ -38,7 +39,7 @@ if uploaded_file:
             if text:
                 full_text += text
 
-    # Show extracted text
+    # Show Text
     st.subheader("Extracted Text")
 
     st.write(full_text[:3000])
@@ -64,8 +65,7 @@ if uploaded_file:
                 json=payload
             )
 
-            result = response.json()
-
             st.subheader("Fact Check Results")
 
-            st.write(result)
+            # Direct raw response output
+            st.text(response.text)
