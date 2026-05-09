@@ -2,20 +2,20 @@ import streamlit as st
 import pdfplumber
 import requests
 
-# Hugging Face API Token
+# Hugging Face API Token from Streamlit Secrets
 API_TOKEN = st.secrets["HF_API_KEY"]
 
-# Correct Hugging Face endpoint
-API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
+# Working Hugging Face model endpoint
+API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base"
 
 headers = {
     "Authorization": f"Bearer {API_TOKEN}"
 }
 
-# Streamlit UI
+# App Title
 st.title("AI Fact Check Agent")
 
-st.write("Upload any PDF and detect potentially false or outdated claims using AI.")
+st.write("Upload any PDF and analyze claims using AI.")
 
 # Upload PDF
 uploaded_file = st.file_uploader(
@@ -39,59 +39,48 @@ if uploaded_file:
             if text:
                 full_text += text
 
+    # Show extracted text
     st.subheader("Extracted Text")
 
     st.write(full_text[:3000])
 
-    # AI Fact Check
+    # Run AI Fact Check
     if st.button("Run AI Fact Check"):
 
-        with st.spinner("AI is analyzing claims..."):
+        with st.spinner("Analyzing PDF with AI..."):
 
             prompt = f"""
-            You are an AI fact-checking assistant.
+            Fact check the following text.
 
-            Analyze the following text and identify:
+            Identify:
             - false claims
-            - misleading statements
             - outdated facts
-            - incorrect statistics
-
-            Return results in simple bullet points.
+            - misleading statistics
 
             TEXT:
             {full_text[:2000]}
             """
 
             payload = {
-                "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": 300
-                }
+                "inputs": prompt
             }
-
-            response = requests.post(
-                API_URL,
-                headers=headers,
-                json=payload
-            )
-
-            st.subheader("Fact Check Results")
 
             try:
 
-                result = response.json()
+                response = requests.post(
+                    API_URL,
+                    headers=headers,
+                    json=payload,
+                    timeout=60
+                )
 
-                if isinstance(result, list):
+                st.subheader("Fact Check Results")
 
-                    st.write(result[0]["generated_text"])
-
-                else:
-
-                    st.write(result)
+                # Show raw API response
+                st.code(response.text)
 
             except Exception as e:
 
-                st.error("Error processing AI response")
+                st.error("API Request Failed")
 
-                st.text(str(e))
+                st.code(str(e))
