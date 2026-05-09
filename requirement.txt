@@ -1,6 +1,5 @@
 streamlit
-openai
 pdfplumber
+openai
 python-dotenv
-requests
-google-generativeai
+pandas
