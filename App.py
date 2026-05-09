@@ -2,24 +2,24 @@ import streamlit as st
 import pdfplumber
 import requests
 
-# HuggingFace API Key
-API_KEY = st.secrets["HF_API_KEY"]
+# Hugging Face API Token
+API_TOKEN = st.secrets["HF_API_KEY"]
 
-# HuggingFace Model URL
-API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+# Correct Hugging Face endpoint
+API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
 
 headers = {
-    "Authorization": f"Bearer {API_KEY}"
+    "Authorization": f"Bearer {API_TOKEN}"
 }
 
-# App Title
+# Streamlit UI
 st.title("AI Fact Check Agent")
 
-st.write("Upload any PDF and detect false or outdated claims.")
+st.write("Upload any PDF and detect potentially false or outdated claims using AI.")
 
 # Upload PDF
 uploaded_file = st.file_uploader(
-    "Upload your PDF",
+    "Upload PDF",
     type=["pdf"]
 )
 
@@ -29,7 +29,7 @@ if uploaded_file:
 
     full_text = ""
 
-    # Read PDF
+    # Extract text from PDF
     with pdfplumber.open(uploaded_file) as pdf:
 
         for page in pdf.pages:
@@ -39,24 +39,35 @@ if uploaded_file:
             if text:
                 full_text += text
 
-    # Show Text
     st.subheader("Extracted Text")
 
     st.write(full_text[:3000])
 
-    # Fact Check Button
+    # AI Fact Check
     if st.button("Run AI Fact Check"):
 
-        with st.spinner("Checking facts..."):
+        with st.spinner("AI is analyzing claims..."):
 
             prompt = f"""
-            Fact check this text and identify false or outdated claims:
+            You are an AI fact-checking assistant.
 
-            {full_text[:3000]}
+            Analyze the following text and identify:
+            - false claims
+            - misleading statements
+            - outdated facts
+            - incorrect statistics
+
+            Return results in simple bullet points.
+
+            TEXT:
+            {full_text[:2000]}
             """
 
             payload = {
-                "inputs": prompt
+                "inputs": prompt,
+                "parameters": {
+                    "max_new_tokens": 300
+                }
             }
 
             response = requests.post(
@@ -67,5 +78,20 @@ if uploaded_file:
 
             st.subheader("Fact Check Results")
 
-            # Direct raw response output
-            st.text(response.text)
+            try:
+
+                result = response.json()
+
+                if isinstance(result, list):
+
+                    st.write(result[0]["generated_text"])
+
+                else:
+
+                    st.write(result)
+
+            except Exception as e:
+
+                st.error("Error processing AI response")
+
+                st.text(str(e))
