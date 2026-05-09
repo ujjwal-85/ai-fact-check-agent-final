@@ -74,7 +74,7 @@ if uploaded_file:
 
             response = client.chat.completions.create(
 
-                model="google/gemma-3-27b-it:free",
+                model="deepseek/deepseek-chat-v3-0324:free",
 
                 messages=[
                     {
